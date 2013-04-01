@@ -9,8 +9,4 @@ model= HMM({ "s": .85, "t" : .15},
 model.generate()
 model.forward(learnSample)
 model.backward(learnSample)
-#for key,value in Alpha:
-#	print value
-	
-
-
+model.forwardbackward(learnSample)
