@@ -33,11 +33,11 @@ class HMM(object):
 						self.Alpha[(" ".join(r[0]), j+1, state)] = self.Pi[state]*self.Emm[(state, r[0][j])]
 				else:
 					for s1 in self.States:
-						alpha = 0
+						alpha = 0.0
 						for s2 in self.States:
 							alpha += self.Alpha[(" ".join(r[0]), j, s2)]*self.Tran[(s2, s1)]*self.Emm[(s1, r[0][j])]
 						self.Alpha[(" ".join(r[0]), j+1, s1)] = alpha
-	
+
 	def backward(self):
 		for r in self.learnSample:
 			rdash = r[0][:]
@@ -48,14 +48,14 @@ class HMM(object):
 
 			for j in xrange(0, len(r[0])-1):
 				for s1 in self.States:
-					beta = 0
+					beta = 0.0
 					for s2 in self.States:
 							beta += self.Beta[(" ".join(r[0]), len(r[0])-j, s2)]*self.Tran[(s1, s2)]*self.Emm[(s2, rdash[j])]
 					self.Beta[(" ".join(r[0]), len(r[0])-j-1, s1)] = beta
 	
 	def sampleProb(self):
 		for r in self.learnSample:
-			p = 0
+			p = 0.0
 			for s in self.States:
 				p += self.Alpha[(" ".join(r[0]), len(r[0]), s)]
 			self.Prob[" ".join(r[0])] = p
@@ -72,7 +72,7 @@ class HMM(object):
 		for r in self.learnSample:
 			for j in xrange(0, len(r[0])-1):
 				for s1 in self.States:
-					delta = 0
+					delta = 0.0
 					for s2 in self.States:
 						delta += self.Gamma[(" ".join(r[0]), j+1, s1, s2)]
 					self.Delta[(" ".join(r[0]), j+1, s1)] = delta
@@ -81,58 +81,63 @@ class HMM(object):
 		I = {}
 		
 		for state in self.States:
-			I[state] = 0
+			I[state] = 0.0
 			for r in self.learnSample:
 				I[state] += self.Delta[(" ".join(r[0]), 1, state)]*r[1]
-			sum = 0
 		
-		for state in self.States:	
-			for s in self.States:
-				sum += I[s]
-			self.Pi[state] = I[state]/sum
+		sum = 0.0
+		for s in self.States:
+			sum += I[s]
 
+		for state in self.States:
+			self.Pi[state] = I[state]/sum
+		
 		K = {}
 
 		for s1 in self.States:
 			for s2 in self.States:
-				gamma = 0
+				gamma = 0.0
 				for r in self.learnSample:
 					for j in xrange(0, len(r[0])-1):
 						gamma += self.Gamma[(" ".join(r[0]), j+1, s1, s2)]*r[1]
 				K[(s1, s2)] = gamma
 
-			
-			sum = 0
-			for k, v in K:
-				if k == s1:
-					sum += K[(k, v)]
+			sum = 0.0
+			for state in self.States:
+				sum += K[(s1, state)]
 
 			for s2 in self.States:
-				self.Tran[(s1, s2)] = K[(s1, s2)]/sum
-
-		K = {}
+				if sum == 0:
+					self.Tran[(s1, s2)] = 0
+				else:
+					self.Tran[(s1, s2)] = K[(s1, s2)]/sum
+		
+		L = {}
 
 		for state in self.States:
 			for symbol in self.Symbols:
-				delta = 0
+				delta = 0.0
 				for r in self.learnSample:
 					for i in xrange(0, len(r[0])-1):
 						if r[0][i] == symbol:
 							delta += self.Delta[(" ".join(r[0]), i+1, state)]*r[1]
-				K[(state, symbol)] = delta
+				L[(state, symbol)] = delta
 
-			sum = 0
+			sum = 0.0
 			for symbol in self.Symbols:
-				sum += K[(state, symbol)]
+				sum += L[(state, symbol)]
 
 			for symbol in self.Symbols:
-				self.Emm[(state, symbol)] = K[(state, symbol)]/sum
+				if sum == 0:
+					self.Emm[(state, symbol)] = 0
+				else:
+					self.Emm[(state, symbol)] = L[(state, symbol)]/sum
 
  	def likelyhood(self):
- 		L = 0
+ 		L = 0.0
  		Pr = {}
  		for r in self.learnSample:
- 			Pr[" ".join(r[0])] = 0
+ 			Pr[" ".join(r[0])] = 0.0
  			for s in self.States:
  				Pr[" ".join(r[0])] += self.Alpha[(" ".join(r[0]), len(r[0]), s)]
  			L += r[1]*math.log(Pr[" ".join(r[0])])
