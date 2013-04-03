@@ -66,7 +66,10 @@ class HMM(object):
 			for j in xrange(0, len(r[0])-1):
 				for s1 in self.States:
 					for s2 in self.States:
-						self.Gamma[(" ".join(r[0]), j+1, s1, s2)] = self.Alpha[(" ".join(r[0]), j+1, s1)]*self.Tran[(s1, s2)]*self.Emm[(s2, r[0][j+1])]*self.Beta[(" ".join(r[0]), j+2, s2)]/self.Prob[" ".join(r[0])]
+						if self.Prob[" ".join(r[0])] == 0:
+							self.Gamma[(" ".join(r[0]), j+1, s1, s2)] = 0
+						else:
+							self.Gamma[(" ".join(r[0]), j+1, s1, s2)] = self.Alpha[(" ".join(r[0]), j+1, s1)]*self.Tran[(s1, s2)]*self.Emm[(s2, r[0][j+1])]*self.Beta[(" ".join(r[0]), j+2, s2)]/self.Prob[" ".join(r[0])]
 
 	def calcDelta(self):
 		for r in self.learnSample:
@@ -140,7 +143,10 @@ class HMM(object):
  			Pr[" ".join(r[0])] = 0.0
  			for s in self.States:
  				Pr[" ".join(r[0])] += self.Alpha[(" ".join(r[0]), len(r[0]), s)]
- 			L += r[1]*math.log(Pr[" ".join(r[0])])
+ 			if Pr[" ".join(r[0])] == 0:
+ 				L+=0
+ 			else:
+ 				L += r[1]*math.log(Pr[" ".join(r[0])])
  		return L
 
  	def optimize(self):
