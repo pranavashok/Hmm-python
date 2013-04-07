@@ -93,7 +93,10 @@ class HMM(object):
 			sum += I[s]
 
 		for state in self.States:
-			self.Pi[state] = I[state]/sum
+			if sum == 0:
+				self.Pi[state] = 0
+			else:
+				self.Pi[state] = I[state]/sum
 		
 		K = {}
 
